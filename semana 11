@@ -1,0 +1,64 @@
+# inventario.py
+
+import sqlite3
+from producto import Producto
+
+class Inventario:
+    def __init__(self):
+        self.productos = {}
+        self.conexion = sqlite3.connect('inventario.db')
+        self.cursor = self.conexion.cursor()
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS productos (
+                id INTEGER PRIMARY KEY,
+                nombre TEXT NOT NULL,
+                cantidad INTEGER NOT NULL,
+                precio REAL NOT NULL
+            )
+        ''')
+        self.conexion.commit()
+
+    def añadir_producto(self, producto):
+        self.productos[producto.get_id()] = producto
+        self.cursor.execute('''
+            INSERT INTO productos (id, nombre, cantidad, precio)
+            VALUES (?, ?, ?, ?)
+        ''', (producto.get_id(), producto.get_nombre(), producto.get_cantidad(), producto.get_precio()))
+        self.conexion.commit()
+
+    def eliminar_producto(self, id):
+        if id in self.productos:
+            del self.productos[id]
+            self.cursor.execute('DELETE FROM productos WHERE id = ?', (id,))
+            self.conexion.commit()
+        else:
+            print("Producto no encontrado.")
+
+    def actualizar_producto(self, id, cantidad=None, precio=None):
+        if id in self.productos:
+            producto = self.productos[id]
+            if cantidad is not None:
+                producto.set_cantidad(cantidad)
+            if precio is not None:
+                producto.set_precio(precio)
+            self.cursor.execute('''
+                UPDATE productos
+                SET cantidad = ?, precio = ?
+                WHERE id = ?
+            ''', (producto.get_cantidad(), producto.get_precio(), id))
+            self.conexion.commit()
+        else:
+            print("Producto no encontrado.")
+
+    def buscar_producto(self, nombre):
+        for producto in self.productos.values():
+            if producto.get_nombre().lower() == nombre.lower():
+                return producto
+        return None
+
+    def mostrar_productos(self):
+        for producto in self.productos.values():
+            print(producto)
+
+    def cerrar_conexion(self):
+        self.conexion.close()
