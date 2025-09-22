@@ -1,0 +1,6 @@
+git init
+git add .
+git commit -m "Inicialización del proyecto Flask"
+git remote add origin https://github.com/luccygo87/proyecto-web-y-manejo-de-rutas.git
+git push -u origin master
+pip install mysql-connector-python
