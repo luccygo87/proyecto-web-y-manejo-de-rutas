@@ -1,0 +1,38 @@
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "¡Hola, Mundo!"
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+    from flask import request, redirect, url_for, render_template
+import mysql.connector
+
+@app.route('/crear', methods=['GET', 'POST'])
+def crear():
+    if request.method == 'POST':
+        nombre = request.form['nombre']
+        precio = request.form['precio']
+        stock = request.form['stock']
+        conn = mysql.connector.connect(user='your_username', password='your_password', database='desarrollo_web')
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO productos (nombre, precio, stock) VALUES (%s, %s, %s)", (nombre, precio, stock))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return redirect(url_for('productos'))
+    return render_template('formulario.html')
+
+    @app.route('/productos')
+def productos():
+    conn = mysql.connector.connect(user='your_username', password='your_password', database='desarrollo_web')
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM productos")
+    productos = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return render_template('productos.html', productos=productos)
